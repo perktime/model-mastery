@@ -11,6 +11,17 @@ Each lab is modular and can be run as a short, focused exercise in **60–90 min
 
 The content is intended for learners comfortable with Python, terminals, and cloud basics and is designed to be useful in both guided sessions and asynchronous study.
 
+## Dev container package proxies
+
+Both dev container configurations set `PIP_INDEX_URL` to
+`https://packagefeedproxy.microsoft.io/pypi/simple` and `NPM_CONFIG_REGISTRY` to
+`https://packagefeedproxy.microsoft.io/npm/`. These settings apply to setup
+commands and subsequent pip and npm installs inside the container.
+
+After updating an existing Codespace or dev container, run **Dev Containers:
+Rebuild Container** from the VS Code command palette to apply the settings and
+rerun dependency installation.
+
 <br/>
 
 ## Learning paths in the series
@@ -23,4 +34,3 @@ The content is intended for learners comfortable with Python, terminals, and clo
 | 4 | **Agent builder on Foundry Models** | From Model Selection to Agent Optimization on Foundry | ✅ Ready | [`foundry/agent-builder`](./foundry/agent-builder) |
 
 > Each learning path is fully self-contained. You can start with whichever model family you care about, or begin with a Foundry optimization track. Follow the setup steps in the folder you choose, and combine notebooks into a longer workshop whenever you want a deeper session.
-

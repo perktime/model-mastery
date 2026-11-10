@@ -1,6 +1,10 @@
 {
   "name": "Model Mastery — Foundry Workshops",
   "image": "mcr.microsoft.com/devcontainers/python:3.13-bookworm",
+  "containerEnv": {
+    "PIP_INDEX_URL": "https://packagefeedproxy.microsoft.io/pypi/simple",
+    "NPM_CONFIG_REGISTRY": "https://packagefeedproxy.microsoft.io/npm/"
+  },
   "features": {
     "ghcr.io/devcontainers/features/azure-cli:1": {
       "version": "latest"

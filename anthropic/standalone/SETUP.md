@@ -13,9 +13,14 @@ Then follow `lab1.md` and `lab2.md` in this folder. Two things to know:
 ## What you need
 
 - An Azure subscription where you can create resources
-- Either Python 3.10 or later, the
-  [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli), and an
-  editor on your own machine, **or** a GitHub account to use a Codespace
+- One of these environments:
+  - **Native:** Git, Python 3.10 or later, the
+    [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli), and an
+    editor on your own machine
+  - **Local dev container:** Git, Docker Desktop (running), and VS Code with
+    the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
+    Python and the Azure CLI run inside the container.
+  - **Codespaces:** a GitHub account; no local tools required
 
 ## Before you start: choose a region
 
@@ -49,43 +54,71 @@ The later steps say "the region you chose". Keep a note of it.
 
 ## 1. Get the code
 
-Pick one. The rest of this guide is the same either way.
+Choose one environment below. After setup, continue with step 2.
 
-### On your own machine
+### Clone first (native or local dev container)
+
+Run these commands on your own machine for either local option. For
+Codespaces, skip to that option below.
 
 ```
 git clone <this repo>
-cd model-mastery/anthropic
+cd model-mastery
+```
+
+> Once this workshop lands in
+> [microsoft-foundry/model-mastery](https://github.com/microsoft-foundry/model-mastery),
+> clone that repository instead; the path below it is the same.
+
+### Option A: Run natively
+
+In your local terminal, set up Python and the lab environment:
+
+```
+cd anthropic
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
+az login
 ```
 
 On Windows, in PowerShell, the same steps are:
 
 ```
-git clone <this repo>
-cd model-mastery\anthropic
+cd anthropic
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 Copy-Item .env.example .env
+az login
 ```
 
 If PowerShell refuses to run `Activate.ps1`, run
 `Set-ExecutionPolicy -Scope Process RemoteSigned` and try again. It applies
 to that window only.
 
-Every script reads the `.env` in `anthropic/`. Run everything from the
-`anthropic/` folder: the `requirements.txt` at the top of the repo is for
-the other workshops, not this one.
+### Option B: Run in a local dev container
 
-> Once this workshop lands in
-> [microsoft-foundry/model-mastery](https://github.com/microsoft-foundry/model-mastery),
-> clone that repository instead; the path below it is the same.
+1. Start Docker Desktop.
+2. Open the cloned `model-mastery` folder in VS Code.
+3. Open the Command Palette and run **Dev Containers: Reopen in Container**.
+   Select **Claude on Microsoft Foundry workshop**
+   (`.devcontainer/anthropic/devcontainer.json`), not the repo-wide workshop
+   configuration.
+4. Wait for the container to build and finish setup. It installs the packages
+   and creates `anthropic/.env` for you; do not run the native setup commands.
+5. **After VS Code has reopened in the container**, open a new integrated
+   terminal and run:
 
-### Or in a Codespace
+```
+cd anthropic
+az login --use-device-code
+```
+
+Run all remaining lab commands in the container's terminal.
+
+### Option C: Run in a Codespace
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/amandaw-ant/model-mastery?ref=anthropic-workshop&devcontainer_path=.devcontainer%2Fanthropic%2Fdevcontainer.json)
 
@@ -95,6 +128,12 @@ The packages and `.env` are set up for you. When it opens, run:
 cd anthropic
 az login --use-device-code
 ```
+
+### For all environments
+
+Every script reads the `.env` in `anthropic/`. Run everything from the
+`anthropic/` folder: the `requirements.txt` at the top of the repo is for
+the other workshops, not this one.
 
 ## 2. Claude in Foundry
 
