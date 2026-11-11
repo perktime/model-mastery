@@ -88,7 +88,7 @@ HTTP 400 listing the valid ones:
    order photo (see `instructor/instructor-notes.md` for what it must contain).
 2. Screenshots in `standalone/images/` and `skillable/images/`: the two folders
    hold the same set, so replace a file in both.
-3. `CUPCAKE_MCP_URL`, `AZURE_SEARCH_ENDPOINT`, `AZURE_SEARCH_QUERY_KEY`, and
+3. `CUPCAKE_MCP_URL`, `AZURE_SEARCH_ENDPOINT`, and
    `EVAL_ENDPOINT_CONNECTION` in the Skillable image `.env`.
 4. The Cupcake Store MCP URL in `standalone/SETUP.md`, step 3, before the repo
    goes to people taking the labs on their own. Change the server's default

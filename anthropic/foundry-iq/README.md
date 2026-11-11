@@ -4,12 +4,14 @@ Module 1.3 gives the Sparkles agent a second MCP tool: a Foundry IQ knowledge
 base holding the shop's policies (hours, delivery, returns, allergens,
 loyalty program, bulk-order rules). Foundry IQ is the managed knowledge
 layer in Microsoft Foundry, built on Azure AI Search, and every knowledge
-base exposes an MCP endpoint. The agent only needs that endpoint and a key.
+base exposes an MCP endpoint. The agent only needs that endpoint and your
+Azure sign-in. No Search keys are created or used.
 
 Who runs the steps below:
 
 - **Skillable workshop:** instructors, once, before the event. Attendees get
-  the endpoint and a query key in their seat's `.env`.
+  the endpoint in their seat's `.env`, and the Search Index Data Reader role
+  on the service (step 3).
 - **On your own:** you, as step 4 of [SETUP.md](../standalone/SETUP.md).
 
 Derived in part from Shilpa Jain's Foundry IQ sample; see
@@ -62,19 +64,38 @@ If your subscription requires an `owner` tag on resource groups, add
 `REGION` to the next one on your row of the list in SETUP.md and run the second
 command again.
 
+Then turn API keys off, so the service accepts only Entra ID sign-in. The same
+call clears `authOptions`, which the service refuses to keep once keys are off:
+
+```
+az resource update --ids $(az search service show -n $SEARCH -g $RG --query id -o tsv) \
+  --api-version 2025-05-01 \
+  --set properties.disableLocalAuth=true properties.authOptions=null
+```
+
+Give yourself the two roles that step 2 needs. Skip this if you created the
+service as an Owner, since you already hold them:
+
+```
+ME=$(az ad signed-in-user show --query id -o tsv)
+SEARCH_ID=$(az search service show -n $SEARCH -g $RG --query id -o tsv)
+for ROLE in "Search Service Contributor" "Search Index Data Contributor"; do
+  az role assignment create --assignee-object-id $ME --assignee-principal-type User \
+    --role "$ROLE" --scope $SEARCH_ID
+done
+```
+
+Role assignments can take a few minutes to take effect.
+
 ## 2. Build the knowledge base
 
 ```
 pip install -r foundry-iq/requirements.txt
 AZURE_SEARCH_ENDPOINT="https://$SEARCH.search.windows.net" \
-AZURE_SEARCH_ADMIN_KEY="$(az search admin-key show --service-name $SEARCH -g $RG --query primaryKey -o tsv)" \
   python foundry-iq/ingest_foundry_iq.py
 ```
 
-The admin key is passed to this one command and not saved anywhere. (The
-script also reads both values from `.env`; with no admin key it signs in
-with `az login`, which needs the Search Service Contributor and Search Index
-Data Contributor roles on the service.)
+The script signs in with `az login`. No key is involved.
 
 It prints the MCP endpoint URL at the end. The knowledge base also appears in
 the Foundry portal under Build, then Knowledge. The MCP URL's `api-version`
@@ -86,27 +107,26 @@ depend on three facts in it: the facility processes tree nuts, bulk orders of
 25 or more need 72 hours notice, and bulk orders carry a 50 percent deposit.
 Keep those if you edit it.
 
-## 3. Create a query key
+## 3. Let the agent read it
 
-The agent connects with a read-only query key, never the admin key:
+The agent signs in as whoever runs it and needs read access to the knowledge
+base. Run this for each person, using their object ID (yours is `$ME` above):
 
 ```
-az search query-key create --name sparkles-agent --service-name $SEARCH -g $RG --query key -o tsv
+az role assignment create --assignee-object-id <object-id> --assignee-principal-type User \
+  --role "Search Index Data Reader" --scope $(az search service show -n $SEARCH -g $RG --query id -o tsv)
 ```
 
 If you have opened a new terminal since step 1, set `RG` and `SEARCH` again
-first.
-
-Put it in `.env` with the endpoint (in a workshop, in the Skillable image
-`.env`):
+first. Put the endpoint in `.env` (in a workshop, in the Skillable image
+`.env`). There is no key to add:
 
 ```
 AZURE_SEARCH_ENDPOINT="https://<service>.search.windows.net"
-AZURE_SEARCH_QUERY_KEY="<query key>"
 KNOWLEDGE_BASE_NAME="cupcake-store-kb"
 ```
 
-Never put the admin key in an attendee image, and never commit a key.
+Never commit a key. This service has none.
 
 ## 4. Verify
 

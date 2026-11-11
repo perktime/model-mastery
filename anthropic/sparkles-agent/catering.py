@@ -20,6 +20,7 @@ import os
 import sys
 
 from anthropic import AnthropicFoundry
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 from agent_framework import Agent, MCPStreamableHTTPTool
@@ -40,11 +41,12 @@ def knowledge_tool() -> MCPStreamableHTTPTool:
     """The shop's Foundry IQ knowledge base, same as Module 1.3."""
     endpoint = os.environ["AZURE_SEARCH_ENDPOINT"].rstrip("/")
     kb = os.environ.get("KNOWLEDGE_BASE_NAME", "cupcake-store-kb")
-    key = os.environ["AZURE_SEARCH_QUERY_KEY"]
+    token = get_bearer_token_provider(
+        DefaultAzureCredential(), "https://search.azure.com/.default")
     return MCPStreamableHTTPTool(
         name="cupcake-knowledge-base",
         url=f"{endpoint}/knowledgebases/{kb}/mcp?api-version=2026-08-01-preview",
-        header_provider=lambda _: {"api-key": key},
+        header_provider=lambda _: {"Authorization": f"Bearer {token()}"},
         load_prompts=False,
     )
 

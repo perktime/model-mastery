@@ -16,7 +16,7 @@ Generating or compiling this infrastructure does not complete that migration.
 - Two sequential Claude deployments: `claude-sonnet-5-5` and `claude-haiku-5-5`.
   Both default to version `1`, GlobalStandard, and capacity `25`.
 - Azure AI Search, defaulting to Free in East US, with semantic ranking and
-  Entra-or-query-key authentication.
+  Entra ID authentication only (API keys are disabled).
 - Optional workspace-based Application Insights and a PerGB2018 Log Analytics
   workspace with 30-day retention; monitoring is enabled by default.
 - An Application Insights project connection unless an existing connection name
@@ -304,14 +304,16 @@ After a future deployment, **manually**:
 
 1. Complete and test the keyless application changes below.
 2. With the Search ingestion roles and `az login`, run the
-   [existing ingestion workflow](../foundry-iq/README.md) without an admin key.
+   [existing ingestion workflow](../foundry-iq/README.md); it signs in with
+   `az login` and uses no key.
    Preserve `minimal` retrieval reasoning effort, `extractiveData`, the text-only
    index, and MCP API version `2026-08-01-preview`.
-3. Create a read-only Search query key using the existing runbook and put it
-   only in local `AZURE_SEARCH_QUERY_KEY`. The MCP client still uses that key;
-   this is separate from Claude keyless inference. No admin key belongs in an
-   attendee environment. No Foundry Search connection replaces this direct MCP
-   access.
+3. Put only `AZURE_SEARCH_ENDPOINT` and `KNOWLEDGE_BASE_NAME` in the local
+   `.env`. The Search service has API keys disabled, so there is no query key
+   to create. The MCP client sends an Entra ID bearer token instead, so each
+   person running the labs needs the Search Index Data Reader role (this
+   template grants the deploying developer the ingestion roles). No Foundry
+   Search connection replaces this direct MCP access.
 4. Configure the external MCP URL and optionally enable local tracing.
    Look for local-loop spans in Application Insights, not hosted-agent traces.
 5. To use the optional evaluator, supply a reachable trusted HTTPS `/evaluate`

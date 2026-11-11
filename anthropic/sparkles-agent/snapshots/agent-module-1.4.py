@@ -4,6 +4,7 @@ import asyncio
 import json  # 👈 1.4
 import os
 
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 from agent_framework import Agent, MCPStreamableHTTPTool
@@ -38,12 +39,13 @@ async def main() -> None:
 
     # 4. Connect to the shop's knowledge base in Foundry IQ (policies)
     search_endpoint = os.environ["AZURE_SEARCH_ENDPOINT"].rstrip("/")
-    search_key = os.environ["AZURE_SEARCH_QUERY_KEY"]
+    search_token = get_bearer_token_provider(
+        DefaultAzureCredential(), "https://search.azure.com/.default")
     kb_name = os.environ.get("KNOWLEDGE_BASE_NAME", "cupcake-store-kb")
     knowledge_tool = MCPStreamableHTTPTool(
         name="cupcake-knowledge-base",
         url=f"{search_endpoint}/knowledgebases/{kb_name}/mcp?api-version=2026-08-01-preview",
-        header_provider=lambda _: {"api-key": search_key},
+        header_provider=lambda _: {"Authorization": f"Bearer {search_token()}"},
         load_prompts=False,
     )
     await knowledge_tool.connect()

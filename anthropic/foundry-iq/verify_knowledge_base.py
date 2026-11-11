@@ -3,7 +3,7 @@
 What it does
   1. Builds the Module 1.3 agent: Claude on Foundry plus the Foundry IQ
      knowledge base as an MCP tool, connected exactly like the snapshot
-     (query key in the api-key header). The Cupcake Store server is left
+     (an Entra ID bearer token, no key). The Cupcake Store server is left
      out, so only the knowledge base can answer.
   2. Asks the four policy questions from Module 1.3, each in a new session.
   3. For each answer, checks two things:
@@ -23,6 +23,7 @@ import os
 import re
 import sys
 
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import find_dotenv, load_dotenv
 
 from agent_framework import Agent, MCPStreamableHTTPTool
@@ -70,12 +71,13 @@ def build_agent() -> tuple[Agent, MCPStreamableHTTPTool]:
         base_url=os.environ["FOUNDRY_ENDPOINT"],
     )
     search_endpoint = os.environ["AZURE_SEARCH_ENDPOINT"].rstrip("/")
-    search_key = os.environ["AZURE_SEARCH_QUERY_KEY"]
+    search_token = get_bearer_token_provider(
+        DefaultAzureCredential(), "https://search.azure.com/.default")
     kb_name = os.environ.get("KNOWLEDGE_BASE_NAME", "cupcake-store-kb")
     knowledge_tool = MCPStreamableHTTPTool(
         name="cupcake-knowledge-base",
         url=f"{search_endpoint}/knowledgebases/{kb_name}/mcp?api-version=2026-08-01-preview",
-        header_provider=lambda _: {"api-key": search_key},
+        header_provider=lambda _: {"Authorization": f"Bearer {search_token()}"},
         load_prompts=False,
     )
     agent = Agent(

@@ -170,10 +170,12 @@ cupcake server do not have to be in the same region.
    - Add Hazelnut with stock 0. A flavor at 0 is hidden from the agent, which
      is what makes it "sold out" in Module 1.6.
    - Set the other stock to the number of real cupcakes you have.
-2. Create the Azure AI Search service, run `foundry-iq/ingest_foundry_iq.py`,
-   issue a query key, and verify Module 1.3 with it (see `foundry-iq/README.md`).
-   Put `AZURE_SEARCH_ENDPOINT`, `AZURE_SEARCH_QUERY_KEY`, and
-   `KNOWLEDGE_BASE_NAME` in the image `.env`. Never the admin key.
+2. Create the Azure AI Search service, turn its API keys off, run
+   `foundry-iq/ingest_foundry_iq.py`, and verify Module 1.3 (see
+   `foundry-iq/README.md`). Put `AZURE_SEARCH_ENDPOINT` and
+   `KNOWLEDGE_BASE_NAME` in the image `.env`. There is no Search key. Each
+   seat's signed-in identity needs the Search Index Data Reader role on the
+   service, or Module 1.3 fails with a 403.
 3. Confirm Skillable has set up an eval endpoint for each seat, running on the
    same Claude deployment as the lab, with `EVAL_ENDPOINT_CONNECTION` and
    `EVAL_ENDPOINT_URL` in each seat's `.env`. Leave `EVAL_ENDPOINT_API_KEY` out
@@ -334,7 +336,7 @@ that lists every item on the photo.
 | Every row in an attendee's Step B report says `Error` | Foundry could not get a usable answer from the eval endpoint. A low score is not an error | Run `/health`, then follow Troubleshooting in [eval-endpoint/README.md](../eval-endpoint/README.md). If it's not a quick fix, do Step B from a recorded run |
 | Every eval row errors, "status must be one of Completed" | Endpoint returns lowercase status | Return `Completed` / `Error` / `Skipped` |
 | "base_url and resource are mutually exclusive" | `ANTHROPIC_FOUNDRY_RESOURCE` is set in the shell | Unset it; this repo uses `FOUNDRY_ENDPOINT` |
-| Knowledge base tool fails to connect | Wrong Search endpoint, key, or knowledge base name | Check the three `AZURE_SEARCH_*` / `KNOWLEDGE_BASE_NAME` values; the endpoint has no trailing slash |
+| Knowledge base tool fails to connect | Wrong Search endpoint or knowledge base name, no `az login`, or the identity lacks the Search Index Data Reader role (a 401 or 403) | Check the two `AZURE_SEARCH_ENDPOINT` / `KNOWLEDGE_BASE_NAME` values; the endpoint has no trailing slash. Run `az login`, and grant the role on the Search service |
 | "MCP server failed to initialize: 401" with correct values | agent-framework-core 1.18.0 does not send `header_provider` headers on the MCP handshake | `pip install "agent-framework-core>=1.17.0,<1.18"` (the requirements pin this); lift the pin only after a later release passes Module 1.3 |
 | Agent answers policy questions without the knowledge base | Instructions not extended, or tool not passed in the list | Compare with `snapshots/agent-module-1.3.py` |
 | Evaluator registration permission error | Seat account lacks rights on the project | Instructor registers on the shared screen; attendees run `run_cloud_eval.py` only |

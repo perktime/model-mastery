@@ -21,12 +21,7 @@ resource search 'Microsoft.Search/searchServices@2025-05-01' = if (!useExisting)
     partitionCount: 1
     hostingMode: 'Default'
     publicNetworkAccess: 'Enabled'
-    disableLocalAuth: false
-    authOptions: {
-      aadOrApiKey: {
-        aadAuthFailureMode: 'http401WithBearerChallenge'
-      }
-    }
+    disableLocalAuth: true
     semanticSearch: 'free'
   }
 }

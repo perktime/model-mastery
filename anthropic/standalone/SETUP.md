@@ -187,13 +187,15 @@ virtual.
 
 Follow sections 1 to 3 of [foundry-iq/README.md](../foundry-iq/README.md): create
 a Free-tier Azure AI Search service in the region you chose, build the
-knowledge base, and create a query key. Your `.env` then has:
+knowledge base, and give yourself read access. Your `.env` then has:
 
 ```
 AZURE_SEARCH_ENDPOINT="https://<service>.search.windows.net"
-AZURE_SEARCH_QUERY_KEY="<query key>"
 KNOWLEDGE_BASE_NAME="cupcake-store-kb"
 ```
+
+There is no Search key. The service has API keys turned off, and the labs sign
+in with your `az login`.
 
 Check it:
 

@@ -20,7 +20,8 @@ as a second tool (Lab 1, Module 1.3).
 
 Required in .env:
   AZURE_SEARCH_ENDPOINT     https://<service>.search.windows.net
-  AZURE_SEARCH_ADMIN_KEY    admin key (leave empty to use Entra ID login)
+Signs in with `az login` (Entra ID); no key is used. Needs the Search Service
+Contributor and Search Index Data Contributor roles on the service.
 Optional:
   KNOWLEDGE_BASE_NAME       default cupcake-store-kb
 
@@ -31,7 +32,6 @@ import os
 import re
 from pathlib import Path
 
-from azure.core.credentials import AzureKeyCredential
 from azure.identity import DefaultAzureCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.indexes import SearchIndexClient
@@ -68,11 +68,6 @@ SEMANTIC_CONFIG_NAME = "cupcake-semantic"
 API_VERSION = "2026-08-01-preview"
 
 
-def credential():
-    key = os.environ.get("AZURE_SEARCH_ADMIN_KEY")
-    return AzureKeyCredential(key) if key else DefaultAzureCredential()
-
-
 def chunk_document(path: Path) -> list[dict]:
     """One chunk per level-2 section, heading kept with its body."""
     parts = re.split(r"\n(?=## )", path.read_text(encoding="utf-8"))
@@ -88,7 +83,7 @@ def chunk_document(path: Path) -> list[dict]:
 
 def main() -> None:
     endpoint = os.environ["AZURE_SEARCH_ENDPOINT"].rstrip("/")
-    cred = credential()
+    cred = DefaultAzureCredential()
     index_client = SearchIndexClient(endpoint=endpoint, credential=cred, api_version=API_VERSION)
 
     chunks = chunk_document(DOCUMENT_PATH)
