@@ -43,6 +43,19 @@ az account set --subscription "<subscription name or id>"   # if the wrong one
 az extension add --name containerapp --upgrade
 ```
 
+If extension installation fails with `/usr/bin/python3: No module named pip`,
+the Azure CLI's system Python is missing pip. Installing packages into the
+workshop's Python environment does not fix that interpreter. In a Debian or
+Ubuntu dev container, install the system package, then retry:
+
+```
+sudo apt-get install -y python3-pip
+az extension add --name containerapp --upgrade
+```
+
+If apt cannot locate the package, run `sudo apt-get update` first. Once the
+extension installs, rerun the `az containerapp` command that failed.
+
 Register the resource providers. **Do this before anything else** — each one
 fails the relevant create step if missing, and registration takes a few minutes:
 
