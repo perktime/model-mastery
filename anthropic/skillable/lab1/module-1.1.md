@@ -8,17 +8,16 @@ model, a conversation session, and tools into one 'Agent' object.
 Open VS Code from the shortcut on the Desktop. It should open with the
 project loaded into the workspace.
 
-Open the '.env' file in the 'anthropic' folder. It needs three values, all from
+Open the '.env' file in the 'anthropic' folder. It needs two values from
 the Playground's **Details** tab:
 
 ```
 FOUNDRY_ENDPOINT="https://<your-resource>.services.ai.azure.com/anthropic"
-FOUNDRY_API_KEY="<key>"
 FOUNDRY_MODEL_DEPLOYMENT="claude-sonnet-5-5"
 ```
 
-If your instructor pre-filled the file, leave it alone. If not, copy
-**Endpoint**, **Key**, and the deployment **Name** into it now.
+If your instructor pre-filled the file, leave it alone. If not, copy the
+**Endpoint** and the deployment **Name** into it now.
 
 One thing to watch: the portal shows the endpoint ending in '/v1/messages',
 but the value here must stop at '/anthropic'. The client appends
@@ -27,18 +26,20 @@ but the value here must stop at '/anthropic'. The client appends
 
 ![Deployment details: Endpoint and Key](../images/04-details-endpoint-key.png)
 
-> Treat the key like a password. '.env' is in '.gitignore' so it never gets
-> committed.
+> There is no key to copy, so ignore **Key** in the screenshot. The agent
+> signs in with your Azure login and sends a short-lived token with each
+> request.
 
 ### Read the starting agent
 
 Open 'sparkles-agent/agent.py'. It does four things:
 
 ```python-notype
-# 2. The chat model: Claude on Microsoft Foundry
+# 2. The chat model: Claude on Microsoft Foundry, signed in with your Azure login
 chat_client = AnthropicFoundryClient(
     model=os.environ["FOUNDRY_MODEL_DEPLOYMENT"],
-    api_key=os.environ["FOUNDRY_API_KEY"],
+    azure_ad_token_provider=get_bearer_token_provider(
+        DefaultAzureCredential(), "https://ai.azure.com/.default"),
     base_url=os.environ["FOUNDRY_ENDPOINT"],
 )
 

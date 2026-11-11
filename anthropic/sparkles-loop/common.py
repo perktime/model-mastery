@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from anthropic import AnthropicFoundry
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 HERE = Path(__file__).resolve().parent
@@ -26,7 +27,8 @@ REQUIRED_TESTIDS = ["title", "flavor-list", "special", "order-btn", "order-count
 
 def client() -> AnthropicFoundry:
     return AnthropicFoundry(
-        api_key=os.environ["FOUNDRY_API_KEY"],
+        azure_ad_token_provider=get_bearer_token_provider(
+            DefaultAzureCredential(), "https://ai.azure.com/.default"),
         base_url=os.environ["FOUNDRY_ENDPOINT"],
     )
 

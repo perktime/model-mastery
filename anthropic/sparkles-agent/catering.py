@@ -81,7 +81,8 @@ def read_order(image_path: str) -> dict:
     data = base64.standard_b64encode(open(image_path, "rb").read()).decode()
 
     client = AnthropicFoundry(
-        api_key=os.environ["FOUNDRY_API_KEY"],
+        azure_ad_token_provider=get_bearer_token_provider(
+            DefaultAzureCredential(), "https://ai.azure.com/.default"),
         base_url=os.environ["FOUNDRY_ENDPOINT"],
     )
     r = client.messages.create(
@@ -116,7 +117,8 @@ async def work_order(order: dict) -> str:
     """
     chat_client = AnthropicFoundryClient(
         model=os.environ["FOUNDRY_MODEL_DEPLOYMENT"],
-        api_key=os.environ["FOUNDRY_API_KEY"],
+        azure_ad_token_provider=get_bearer_token_provider(
+            DefaultAzureCredential(), "https://ai.azure.com/.default"),
         base_url=os.environ["FOUNDRY_ENDPOINT"],
     )
     mcp_tool = MCPStreamableHTTPTool(name="cupcake-store", url=os.environ["CUPCAKE_MCP_URL"])

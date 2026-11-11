@@ -9,6 +9,7 @@ Run:  python websearch.py        (from sparkles-loop; reads the repo .env)
 import os
 
 from anthropic import AnthropicFoundry
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,7 +20,8 @@ QUESTION = ("What cupcake flavors are trending this fall? Recommend one as "
             "tomorrow's Sparkles special and say why. Cite your sources.")
 
 client = AnthropicFoundry(
-    api_key=os.environ["FOUNDRY_API_KEY"],
+    azure_ad_token_provider=get_bearer_token_provider(
+        DefaultAzureCredential(), "https://ai.azure.com/.default"),
     base_url=os.environ["FOUNDRY_ENDPOINT"],
 )
 

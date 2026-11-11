@@ -78,8 +78,9 @@ Module 1.2 gives it the real menu. Module 1.3 gives it the real policies.
 ### Look at the code
 
 Click the **Continue in code** button. This is the same call you'll make from Python in the
-next module. Note the three things it needs: the endpoint, a key, and the
-deployment name.
+next module. Note what it needs: the endpoint and the deployment name. The
+code the portal shows signs in with a key. Your agent code signs in with your
+Azure login instead, so there is no key to copy.
 
 ![Playground](../images/03-playground.png)
 

@@ -192,7 +192,10 @@ cupcake server do not have to be in the same region.
    have to be on the store menu from step 1. To use your own photo instead,
    see "The catering-order photo" below.
 6. Deploy `claude-sonnet-5-5` and `claude-haiku-5-5` (Global Standard) with
-   those exact names.
+   those exact names. The labs sign in to Claude with each seat's Azure
+   identity, not a key, so every seat's account needs the Foundry User role on
+   the Foundry account. Without it the first call returns a 401 or 403. There
+   is no Claude key to put in the image `.env`.
 7. Check Module 2.2 on a seat: from `sparkles-hosted/`, `python agent.py`
    prints `"passed": true` within a minute. The Claude Agent SDK starts a program of
    its own (`claude.exe` on Windows), so this is the check that the seat

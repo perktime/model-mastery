@@ -9,6 +9,7 @@ import json
 import os
 
 from anthropic import AnthropicFoundry
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -49,7 +50,8 @@ def first_text(response) -> str:
 def make_receipt(order_text: str) -> dict:
     """Ask Claude for a receipt that is guaranteed to match RECEIPT_SCHEMA."""
     client = AnthropicFoundry(
-        api_key=os.environ["FOUNDRY_API_KEY"],
+        azure_ad_token_provider=get_bearer_token_provider(
+            DefaultAzureCredential(), "https://ai.azure.com/.default"),
         base_url=os.environ["FOUNDRY_ENDPOINT"],
     )
     r = client.messages.create(

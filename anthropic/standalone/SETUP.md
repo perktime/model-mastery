@@ -141,13 +141,16 @@ the other workshops, not this one.
    one you have).
 2. Deploy two Claude models with Global Standard and keep the default
    deployment names: `claude-sonnet-5-5` and `claude-haiku-5-5`.
-3. Open the Sonnet deployment's **Details** tab and copy **Endpoint** and
-   **Key** into `.env`:
+3. Open the Sonnet deployment's **Details** tab and copy the **Endpoint** into
+   `.env`. There is no key to copy: the labs sign in with your `az login`.
 
 ```
 FOUNDRY_ENDPOINT="https://<resource>.services.ai.azure.com/anthropic"
-FOUNDRY_API_KEY="<key>"
 ```
+
+4. Make sure your account has the **Foundry User** role on the Foundry
+   resource (Foundry Owner also works). Without it, the first call returns a
+   401 or 403. The Foundry resource can keep API keys turned off.
 
 **NOTE:** The portal may show the endpoint with `/v1/messages` on the end. **Trim that
 off** and keep everything up to and including `/anthropic`; the SDK appends

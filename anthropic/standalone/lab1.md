@@ -121,12 +121,11 @@ model, a conversation session, and tools into one `Agent` object.
 
 ### Check your settings
 
-Open the `.env` file in the `anthropic` folder in VS Code. It needs three
-values, all from the Playground's **Details** tab:
+Open the `.env` file in the `anthropic` folder in VS Code. It needs two
+values from the Playground's **Details** tab:
 
 ```
 FOUNDRY_ENDPOINT="https://<your-resource>.services.ai.azure.com/anthropic"
-FOUNDRY_API_KEY="<key>"
 FOUNDRY_MODEL_DEPLOYMENT="claude-sonnet-5-5"
 ```
 
@@ -137,18 +136,21 @@ so leaving it on asks for `/anthropic/v1/messages/v1/messages`, which 404s.
 
 ![Deployment details: Endpoint and Key](images/04-details-endpoint-key.png)
 
-> Treat the key like a password. `.env` is in `.gitignore` so it never gets
-> committed.
+> There is no key to copy, so you can ignore **Key** in the screenshot. The
+> agent signs in with the Azure login you made in SETUP.md (`az login`) and
+> sends a short-lived token with each request. Your account needs the
+> **Foundry User** role on the Foundry resource.
 
 ### Read the starting agent
 
 Open `sparkles-agent/agent.py`. It does four things:
 
 ```python-notype
-# 2. The chat model: Claude on Microsoft Foundry
+# 2. The chat model: Claude on Microsoft Foundry, signed in with your Azure login
 chat_client = AnthropicFoundryClient(
     model=os.environ["FOUNDRY_MODEL_DEPLOYMENT"],
-    api_key=os.environ["FOUNDRY_API_KEY"],
+    azure_ad_token_provider=get_bearer_token_provider(
+        DefaultAzureCredential(), "https://ai.azure.com/.default"),
     base_url=os.environ["FOUNDRY_ENDPOINT"],
 )
 
@@ -202,6 +204,7 @@ marked 👈 1.2A in the box below.
 import asyncio
 import os
 
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 from agent_framework import Agent, MCPStreamableHTTPTool  # 👈 1.2A
@@ -218,10 +221,11 @@ def reply(response) -> str:
 
 
 async def main() -> None:
-    # 2. The chat model: Claude on Microsoft Foundry
+    # 2. The chat model: Claude on Microsoft Foundry, signed in with your Azure login
     chat_client = AnthropicFoundryClient(
         model=os.environ["FOUNDRY_MODEL_DEPLOYMENT"],
-        api_key=os.environ["FOUNDRY_API_KEY"],
+        azure_ad_token_provider=get_bearer_token_provider(
+            DefaultAzureCredential(), "https://ai.azure.com/.default"),
         base_url=os.environ["FOUNDRY_ENDPOINT"],
     )
 
@@ -296,6 +300,7 @@ the chat starts. Make the edits marked 👈 1.2B in `agent.py`, as in the box be
 import asyncio
 import os
 
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 from agent_framework import Agent, MCPStreamableHTTPTool
@@ -312,10 +317,11 @@ def reply(response) -> str:
 
 
 async def main() -> None:
-    # 2. The chat model: Claude on Microsoft Foundry
+    # 2. The chat model: Claude on Microsoft Foundry, signed in with your Azure login
     chat_client = AnthropicFoundryClient(
         model=os.environ["FOUNDRY_MODEL_DEPLOYMENT"],
-        api_key=os.environ["FOUNDRY_API_KEY"],
+        azure_ad_token_provider=get_bearer_token_provider(
+            DefaultAzureCredential(), "https://ai.azure.com/.default"),
         base_url=os.environ["FOUNDRY_ENDPOINT"],
     )
 
@@ -431,7 +437,7 @@ token. Make the edits marked 👈 1.3 in `agent.py`, as in the box below.
 import asyncio
 import os
 
-from azure.identity import DefaultAzureCredential, get_bearer_token_provider  # 👈 1.3
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 from agent_framework import Agent, MCPStreamableHTTPTool
@@ -448,10 +454,11 @@ def reply(response) -> str:
 
 
 async def main() -> None:
-    # 2. The chat model: Claude on Microsoft Foundry
+    # 2. The chat model: Claude on Microsoft Foundry, signed in with your Azure login
     chat_client = AnthropicFoundryClient(
         model=os.environ["FOUNDRY_MODEL_DEPLOYMENT"],
-        api_key=os.environ["FOUNDRY_API_KEY"],
+        azure_ad_token_provider=get_bearer_token_provider(
+            DefaultAzureCredential(), "https://ai.azure.com/.default"),
         base_url=os.environ["FOUNDRY_ENDPOINT"],
     )
 
@@ -638,10 +645,11 @@ def reply(response) -> str:
 
 
 async def main() -> None:
-    # 2. The chat model: Claude on Microsoft Foundry
+    # 2. The chat model: Claude on Microsoft Foundry, signed in with your Azure login
     chat_client = AnthropicFoundryClient(
         model=os.environ["FOUNDRY_MODEL_DEPLOYMENT"],
-        api_key=os.environ["FOUNDRY_API_KEY"],
+        azure_ad_token_provider=get_bearer_token_provider(
+            DefaultAzureCredential(), "https://ai.azure.com/.default"),
         base_url=os.environ["FOUNDRY_ENDPOINT"],
     )
 

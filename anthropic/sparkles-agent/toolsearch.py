@@ -13,6 +13,7 @@ import os
 import sys
 
 from anthropic import AnthropicFoundry
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -43,7 +44,8 @@ tools = [{"type": "tool_search_tool_bm25_20251119", "name": "tool_search_tool_bm
 ]
 
 client = AnthropicFoundry(
-    api_key=os.environ["FOUNDRY_API_KEY"],
+    azure_ad_token_provider=get_bearer_token_provider(
+        DefaultAzureCredential(), "https://ai.azure.com/.default"),
     base_url=os.environ["FOUNDRY_ENDPOINT"],
 )
 

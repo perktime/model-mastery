@@ -8,6 +8,7 @@ to catch up.
 import asyncio
 import os
 
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
 
 from agent_framework import Agent
@@ -24,10 +25,11 @@ def reply(response) -> str:
 
 
 async def main() -> None:
-    # 2. The chat model: Claude on Microsoft Foundry
+    # 2. The chat model: Claude on Microsoft Foundry, signed in with your Azure login
     chat_client = AnthropicFoundryClient(
         model=os.environ["FOUNDRY_MODEL_DEPLOYMENT"],
-        api_key=os.environ["FOUNDRY_API_KEY"],
+        azure_ad_token_provider=get_bearer_token_provider(
+            DefaultAzureCredential(), "https://ai.azure.com/.default"),
         base_url=os.environ["FOUNDRY_ENDPOINT"],
     )
 

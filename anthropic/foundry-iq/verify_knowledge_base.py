@@ -67,7 +67,8 @@ def tool_calls(response) -> list[str]:
 def build_agent() -> tuple[Agent, MCPStreamableHTTPTool]:
     chat_client = AnthropicFoundryClient(
         model=os.environ["FOUNDRY_MODEL_DEPLOYMENT"],
-        api_key=os.environ["FOUNDRY_API_KEY"],
+        azure_ad_token_provider=get_bearer_token_provider(
+            DefaultAzureCredential(), "https://ai.azure.com/.default"),
         base_url=os.environ["FOUNDRY_ENDPOINT"],
     )
     search_endpoint = os.environ["AZURE_SEARCH_ENDPOINT"].rstrip("/")

@@ -4,10 +4,10 @@ Infrastructure for the [Anthropic workshop](../README.md), not an agent
 deployment. All Bicep artifacts live in this directory. Nothing here changes the
 lab code or reads or updates `anthropic/.env`.
 
-**Important: new Foundry accounts disable API-key authentication. The current lab
-scripts still require `FOUNDRY_API_KEY` and will not run against these new accounts
-until the keyless client changes described below are implemented and tested.**
-Generating or compiling this infrastructure does not complete that migration.
+**New Foundry accounts disable API-key authentication, and the lab code now
+signs in with Entra ID (`az login`) instead of `FOUNDRY_API_KEY`.** The one
+exception is the separately deployed evaluator service in `eval-endpoint/`,
+which still reads a key (see "Keyless application changes" below).
 
 ## What this creates
 
@@ -302,7 +302,8 @@ credential; treat it as operational configuration and avoid publishing it.
 
 After a future deployment, **manually**:
 
-1. Complete and test the keyless application changes below.
+1. Make sure the signed-in developer holds the Foundry User role on the Foundry
+   account, then run `az login` (see "Keyless application changes" below).
 2. With the Search ingestion roles and `az login`, run the
    [existing ingestion workflow](../foundry-iq/README.md); it signs in with
    `az login` and uses no key.
@@ -323,53 +324,49 @@ After a future deployment, **manually**:
    that script for a connection already managed by Bicep.
 6. Only then run model, knowledge-base, telemetry, and evaluation smoke tests.
 
-### Keyless application follow-up (not implemented here)
+### Keyless application changes
 
-The [official Claude authentication example][claude-auth] uses
+The lab code signs in to Claude with Entra ID instead of a key, following the
+[official Claude authentication example][claude-auth]:
 `DefaultAzureCredential` with `get_bearer_token_provider` for
-`https://ai.azure.com/.default`, passed as `azure_ad_token_provider` to
-`AnthropicFoundry`. Use a refreshable provider, not a one-time token saved in
-`.env`. For local development, sign in with `az login`; no client secret or
-service principal is needed solely for interactive development.
+`https://ai.azure.com/.default`, passed as `azure_ad_token_provider`. The
+provider refreshes tokens, so nothing is saved in `.env`. For local
+development, sign in with `az login`; no client secret or service principal is
+needed. The signed-in identity needs the Foundry User role on the Foundry
+account (this template does not assign it).
 
-The installed versions were checked without constructing a client or reading
-environment secrets: `agent-framework-core` 1.17.0,
-`agent-framework-anthropic` 1.0.0b260910, and `anthropic` 0.116.0.
-The adapter's `AnthropicFoundryClient` accepts `azure_ad_token_provider` and
-passes it through to `AsyncAnthropicFoundry`; it also accepts an
-`anthropic_client` for explicit SDK-client injection. These versions match the
-lab's framework requirements. Use that verified token-provider integration,
-remove the explicit API-key argument, and check async credential lifecycle
-and token refresh in the separate runtime migration. Do not silently fall back
-to a stored key. Confirm stale key environment variables cannot override the
-intended token-provider path. Recheck the signature if package versions change.
+Verified with `agent-framework-core` 1.17.0, `agent-framework-anthropic`
+1.0.0b260910, and `anthropic` 0.116.0: `AnthropicFoundryClient` and
+`AnthropicFoundry` both accept `azure_ad_token_provider`, and a real call with
+no key set succeeded through each. Recheck the signature if the package
+versions change.
 
-Affected executable sources:
+Migrated to Entra ID (Claude and Azure AI Search):
 
 - [agent.py](../sparkles-agent/agent.py), [catering.py](../sparkles-agent/catering.py),
-  [receipt.py](../sparkles-agent/receipt.py), and snapshots
-  [1.1](../sparkles-agent/snapshots/agent-module-1.1.py),
+  [receipt.py](../sparkles-agent/receipt.py), [toolsearch.py](../sparkles-agent/toolsearch.py),
+  and snapshots [1.1](../sparkles-agent/snapshots/agent-module-1.1.py),
   [1.2](../sparkles-agent/snapshots/agent-module-1.2.py),
   [1.3](../sparkles-agent/snapshots/agent-module-1.3.py),
   [1.4](../sparkles-agent/snapshots/agent-module-1.4.py).
 - [Loop common client](../sparkles-loop/common.py) and
   [standalone web search](../sparkles-loop/websearch.py).
 - [Knowledge-base verification](../foundry-iq/verify_knowledge_base.py).
-- [Evaluator service](../eval-endpoint/eval_endpoint.py), if its separately
-  managed deployment is migrated. That service would need its own managed
-  identity, inference grant, and matching authentication code; this template
-  does not deploy or assign roles to it.
+- The matching instructions: [standalone setup](../standalone/SETUP.md),
+  [Lab 1](../standalone/lab1.md), and Skillable modules
+  [1.0](../skillable/lab1/module-1.0.md), [1.1](../skillable/lab1/module-1.1.md),
+  [1.2](../skillable/lab1/module-1.2.md), [1.3](../skillable/lab1/module-1.3.md),
+  [1.4](../skillable/lab1/module-1.4.md).
 
-Related instructions requiring updates in that separate migration:
-[standalone setup](../standalone/SETUP.md), [Lab 1](../standalone/lab1.md),
-Skillable modules [1.1](../skillable/lab1/module-1.1.md),
-[1.2](../skillable/lab1/module-1.2.md), [1.3](../skillable/lab1/module-1.3.md),
-[1.4](../skillable/lab1/module-1.4.md), and the
-[evaluator deployment guide](../eval-endpoint/README.md).
-Leave `FOUNDRY_API_KEY` in the existing environment files untouched; leaving it
-present is not a request to use it. The evaluation project's SDK and Search
-ingestion already support `DefaultAzureCredential` and should retain that
-behavior. Test every migrated surface before claiming end-to-end keyless support.
+Not migrated:
+
+- [Evaluator service](../eval-endpoint/eval_endpoint.py) and its
+  [deployment guide](../eval-endpoint/README.md). It runs as a separately
+  deployed service that still reads `FOUNDRY_API_KEY`. Migrating it needs its
+  own managed identity, an inference role for that identity, and matching
+  authentication code; this template does not deploy or assign roles to it.
+- [sparkles-hosted](../sparkles-hosted/agent.py) needs no change. It uses a key
+  only if `FOUNDRY_API_KEY` is set, and otherwise signs in as itself.
 
 ## Costs and teardown ownership
 
