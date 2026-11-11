@@ -1,0 +1,60 @@
+diff --git a/.env.example b/.env.example
+index 32e142c..155e831 100644
+--- a/.env.example
++++ b/.env.example
+@@ -8,3 +8,6 @@
+ 
+-# For real Azure Storage:
++# For real Azure Storage, use Entra ID (no keys). The identity needs the
++# "Storage Table Data Contributor" role on the account:
++AZURE_STORAGE_ACCOUNT_NAME=
++# Leave the connection string empty when using the account name above.
+ AZURE_STORAGE_CONNECTION_STRING=
+diff --git a/backend/storage.py b/backend/storage.py
+index 655c558..76af654 100644
+--- a/backend/storage.py
++++ b/backend/storage.py
+@@ -8,4 +8,8 @@ from azure.core.exceptions import ResourceExistsError, ResourceNotFoundError
+ from azure.data.tables import TableServiceClient, UpdateMode
++from azure.identity import DefaultAzureCredential
+ 
++# Keyless (Entra ID) access is the default. AZURE_STORAGE_CONNECTION_STRING is
++# only for local development, e.g. Azurite.
+ CONN_STR = os.environ.get("AZURE_STORAGE_CONNECTION_STRING", "")
++STORAGE_ACCOUNT_NAME = os.environ.get("AZURE_STORAGE_ACCOUNT_NAME", "")
+ 
+@@ -25,4 +29,25 @@ def _generate_customer_id() -> str:
+ 
++_credential: DefaultAzureCredential | None = None
++
++
++def _get_credential() -> DefaultAzureCredential:
++    # Shared so the token cache survives across the many short-lived clients.
++    global _credential
++    if _credential is None:
++        _credential = DefaultAzureCredential()
++    return _credential
++
++
+ def _client() -> TableServiceClient:
+-    return TableServiceClient.from_connection_string(CONN_STR)
++    if CONN_STR:
++        return TableServiceClient.from_connection_string(CONN_STR)
++    if not STORAGE_ACCOUNT_NAME:
++        raise RuntimeError(
++            "Set AZURE_STORAGE_ACCOUNT_NAME (Entra ID access) or "
++            "AZURE_STORAGE_CONNECTION_STRING (local development only)."
++        )
++    return TableServiceClient(
++        endpoint=f"https://{STORAGE_ACCOUNT_NAME}.table.core.windows.net",
++        credential=_get_credential(),
++    )
+ 
+diff --git a/requirements.txt b/requirements.txt
+index 95db1ef..70381d5 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -5,2 +5,3 @@ python-multipart==0.0.32
+ azure-data-tables==12.7.0
++azure-identity==1.27.0
+ bcrypt==5.0.0

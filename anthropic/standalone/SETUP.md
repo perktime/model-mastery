@@ -165,7 +165,10 @@ do not deploy anything: ask your instructor for the address.
 [GlobalAICommunity/cupcake-mcp](https://github.com/GlobalAICommunity/cupcake-mcp)
 (Henk Boelman, MIT). [cupcake-mcp-setup.md](../cupcake-mcp-setup.md) is a
 step-by-step runbook for deploying it to Azure Container Apps, including how to
-configure the store afterwards and how to shut it down when you are done.
+configure the store afterwards and how to shut it down when you are done. It
+uses a managed identity and a private endpoint, so it works in subscriptions
+that block storage keys, public blob or network access, or registry admin
+passwords.
 Allow 20 to 30 minutes, most of it provisioning and build time.
 
 Either way, set the address in `.env`:

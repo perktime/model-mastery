@@ -35,7 +35,9 @@ Built on earlier work by Henk Boelman and Shilpa Jain — see [THIRD-PARTY-NOTIC
 | `sparkles-evals/` | Module 2.4: evaluator registration and cloud eval run scripts |
 | `eval-endpoint/` | The Claude-as-judge eval endpoint service for Module 2.4b (Skillable sets one up for each attendee; on your own, optional) |
 | `foundry-iq/` | Module 1.3: the store document, the ingest script that builds the Foundry IQ knowledge base, and a script that verifies it (run once per workshop, or by you in SETUP.md) |
-| `cupcake-mcp-setup.md` | Runbook for deploying the Cupcake Store MCP server to Azure: resources, deploy, store config, and how to turn it off |
+| `cupcake-mcp-setup.md` | Runbook for deploying the Cupcake Store MCP server to Azure with a managed identity and a private endpoint (no storage keys, registry passwords, or public storage access): resources, deploy, store config, and how to turn it off |
+| `cupcake-mcp-keyless.patch` | Patch the runbook applies to the upstream Cupcake MCP app so it reaches Table Storage with Entra ID instead of a connection string |
+| `cupcake-mcp-private.bicep` | Template the runbook deploys: virtual network, storage private endpoint and DNS, the Container Apps environment, and the app |
 | `instructor/` | Instructor notes. Ships with neither zip |
 
 ## Setup (baked into the Skillable image)
